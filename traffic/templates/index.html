@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Traffic Management Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #e8491d 3px solid;
+        }
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+        header ul {
+            padding: 0;
+            list-style: none;
+        }
+        header li {
+            float: right;
+            display: inline;
+            padding: 0 20px;
+        }
+        .main-content {
+            background: #ffffff;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
+        }
+        .main-content h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .form-group button, .form-group a {
+            padding: 10px 20px;
+            background: #e8491d;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .form-group button:hover, .form-group a:hover {
+            background: #35424a;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <ul>
+                <li><a href="#">Home</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <h1>Traffic Management Dashboard</h1>
+
+            <form id="main-form" method="get">
+                <div class="form-group">
+                    <label for="area_name">Select Area:</label>
+                    <select id="area_name" name="area_name">
+                        <option value="neelbad">Neelbad</option>
+                        <!-- Add more areas as needed -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="road_name">Select Road:</label>
+                    <select id="road_name" name="road_name">
+                        <option value="1">Road 1</option>
+                        <option value="2">Road 2</option>
+                        <option value="3">Road 3</option>
+                        <option value="4">Road 4</option>
+                        <!-- Add more roads as needed -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="image_url">Select Image:</label>
+                    <select id="image_url" name="image_url">
+                        {% for snapshot_image in snapshot_images %}
+                            <option value="http://127.0.0.1:8000{{ snapshot_image.road_1image.url }}">Frame 1</option>
+                            <option value="http://127.0.0.1:8000{{ snapshot_image.road_2image.url }}">Frame 2</option>
+                            <option value="http://127.0.0.1:8000{{ snapshot_image.road_3image.url }}">Frame 3</option>
+                            <option value="http://127.0.0.1:8000{{ snapshot_image.road_4image.url }}">Frame 4</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <button type="button" id="process-image">Process Image</button>
+                    <button type="button" id="create-mask">Create/Update Mask</button>
+                </div>
+            </form>
+
+            <!-- Add other options below as needed -->
+            <!-- Add this to your index.html -->
+            <div class="form-group">
+                <button type="button" id="start-process">Start</button>
+            </div>
+            <div class="form-group">
+                <a href="{% url 'get_current_state' %}">API</a>
+                <a href="{% url 'start_process_all' %}">Final Blow</a>
+                <a href="{% url 'upload_video' %}">Upload Video</a>
+                <a href="{% url 'dashboard' %}">View Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('process-image').addEventListener('click', function() {
+            const areaName = document.getElementById('area_name').value;
+            const roadName = document.getElementById('road_name').value;
+            const imageUrl = document.getElementById('image_url').value;
+
+            const processImageUrl = "{% url 'process_image' %}?image_url=" + encodeURIComponent(imageUrl) + "&road_name=" + encodeURIComponent(roadName);
+            window.location.href = processImageUrl;
+        });
+
+        document.getElementById('create-mask').addEventListener('click', function() {
+            const areaName = document.getElementById('area_name').value;
+
+            const createMaskUrl = "{% url 'create_mask' %}?area_name=" + encodeURIComponent(areaName);
+            window.location.href = createMaskUrl;
+        });
+        document.getElementById('start-process').addEventListener('click', function() {
+            const areaName = document.getElementById('area_name').value;
+
+            const createMaskUrl = "{% url 'start_process' %}?area_name=" + encodeURIComponent(areaName);
+            window.location.href = createMaskUrl;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Smart Traffic Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .vehicle-counts, .traffic-lights {
+            margin: 20px;
+            max-width: 600px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .vehicle-counts h2, .traffic-lights h2 {
+            text-align: center;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .vehicle-counts ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .vehicle-counts li {
+            padding: 12px;
+            font-size: 18px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .vehicle-counts li:last-child {
+            border-bottom: none;
+        }
+
+        .traffic-light {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .traffic-light-container {
+            width: 60px;
+            height: 160px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .light {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: gray;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .light-red {
+            background-color: red;
+        }
+
+        .light-yellow {
+            background-color: yellow;
+        }
+
+        .light-green {
+            background-color: green;
+        }
+
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-left: 20px;
+        }
+
+        .road-name {
+            font-size: 18px;
+            color: #666;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Traffic Management System</h1>
+
+    <div class="container">
+        <div class="vehicle-counts">
+            <h2>Vehicle Counts</h2>
+            <ul id="vehicle-counts-list">
+                {% for count in vehicle_counts %}
+                <li>{{ count.vehicle_type }}: {{ count.count }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="traffic-lights">
+            <h2>Traffic Lights</h2>
+            {% for light in traffic_lights %}
+            <div class="traffic-light" id="traffic-light-{{ light.id }}">
+                <div class="traffic-light-container">
+                    <div id="light-red-{{ light.id }}" class="light {% if light.state == 'Red' %}light-red{% endif %}"></div>
+                    <div id="light-yellow-{{ light.id }}" class="light {% if light.state == 'Yellow' %}light-yellow{% endif %}"></div>
+                    <div id="light-green-{{ light.id }}" class="light {% if light.state == 'Green' %}light-green{% endif %}"></div>
+                </div>
+                <div>
+                    <div class="road-name">Road: {{ light.road_name }}</div>
+                    <div class="countdown" id="countdown-{{ light.id }}">{{ light.countdown_timer }}s</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function fetchUpdates() {
+            fetch('/get-updates/')
+                .then(response => response.json())
+                .then(data => {
+                    // Update vehicle counts
+                    const vehicleCountsList = document.getElementById('vehicle-counts-list');
+                    vehicleCountsList.innerHTML = '';
+                    data.vehicle_counts.forEach(count => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${count.vehicle_type}: ${count.count}`;
+                        vehicleCountsList.appendChild(listItem);
+                    });
+
+                    // Update traffic lights
+                    data.traffic_lights.forEach(light => {
+                        const countdownElement = document.getElementById(`countdown-${light.id}`);
+                        const redLightElement = document.getElementById(`light-red-${light.id}`);
+                        const yellowLightElement = document.getElementById(`light-yellow-${light.id}`);
+                        const greenLightElement = document.getElementById(`light-green-${light.id}`);
+
+                        countdownElement.textContent = `${light.countdown_timer}s`;
+
+                        // Reset all lights
+                        redLightElement.className = 'light';
+                        yellowLightElement.className = 'light';
+                        greenLightElement.className = 'light';
+
+                        // Set the correct light color based on the state
+                        if (light.state === 'Red') {
+                            redLightElement.className = 'light light-red';
+                        } else if (light.state === 'Yellow') {
+                            yellowLightElement.className = 'light light-yellow';
+                        } else if (light.state === 'Green') {
+                            greenLightElement.className = 'light light-green';
+                        }
+                    });
+                });
+        }
+
+        // Poll every 1 second
+        setInterval(fetchUpdates, 1000);
+    </script>
+</body>
+</html>

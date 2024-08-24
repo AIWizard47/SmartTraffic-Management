@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Draw Polygon Mask</title>
+    <style>
+        #canvas-container {
+            position: relative;
+        }
+        #canvas {
+            border: 1px solid black;
+            cursor: crosshair;
+        }
+        .button-group {
+            margin-top: 10px;
+        }
+        .button-group button {
+            margin-right: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Draw Polygon for Mask</h1>
+
+    <div>
+        <label for="image-select">Select Image:</label>
+        <select id="image-select">
+            {% for image in images %}
+                <option value="{{ image.url }}">{{ image.label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="button-group">
+        <button id="undo-button" type="button">Undo Last Point</button>
+        <button id="reset-button" type="button">Reset</button>
+        <button id="close-polygon-button" type="button">Close Polygon</button>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="road_name">Road Name:</label>
+        {{ form.road_name }}
+
+        <label for="mask_points">Mask Points (JSON):</label>
+        {{ form.mask_points }}
+
+        <button type="submit">Save Mask</button>
+    </form>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const image = new Image();
+        let points = [];
+        let polygonClosed = false;
+
+        function loadImage(url) {
+            image.src = url;
+            image.onload = function() {
+                canvas.width = image.width;
+                canvas.height = image.height;
+                redraw();
+            }
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'red';
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+
+                if (i > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(points[i - 1].x, points[i - 1].y);
+                    ctx.lineTo(point.x, point.y);
+                    ctx.stroke();
+                }
+            }
+
+            if (points.length > 2 && polygonClosed) {
+                ctx.beginPath();
+                ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+                ctx.lineTo(points[0].x, points[0].y);
+                ctx.stroke();
+            }
+        }
+
+        canvas.addEventListener('click', function(event) {
+            if (polygonClosed) {
+                alert("Polygon is closed. Reset to draw a new one.");
+                return;
+            }
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            points.push({x: x, y: y});
+            redraw();
+            updateMaskPoints();
+        });
+
+        function updateMaskPoints() {
+            const maskPointsField = document.getElementById('id_mask_points');
+            maskPointsField.value = JSON.stringify(points);
+        }
+
+        document.getElementById('undo-button').addEventListener('click', function() {
+            if (points.length > 0 && !polygonClosed) {
+                points.pop();
+                redraw();
+                updateMaskPoints();
+            }
+        });
+
+        document.getElementById('reset-button').addEventListener('click', function() {
+            points = [];
+            polygonClosed = false;
+            redraw();
+            updateMaskPoints();
+        });
+
+        document.getElementById('close-polygon-button').addEventListener('click', function() {
+            if (points.length < 3) {
+                alert("Need at least 3 points to close the polygon.");
+                return;
+            }
+            polygonClosed = true;
+            redraw();
+        });
+
+        // Dropdown change event to load the selected image
+        document.getElementById('image-select').addEventListener('change', function() {
+            const selectedImageUrl = this.value;
+            loadImage(selectedImageUrl);
+        });
+
+        // Load the first image by default
+        loadImage(document.getElementById('image-select').value);
+    </script>
+</body>
+</html>

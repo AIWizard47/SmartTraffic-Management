@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+
+        .section {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+
+        .frame {
+            width: 250px;
+            height: 300px;
+            background-color: red;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            margin: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5em;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .frame img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 10px;
+        }
+
+        .green {
+            background-color: green;
+        }
+
+        .countdown {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Traffic Management System</h1>
+    <div class="container">
+        <div class="section">
+            {% for light, vehicle_count, mask in light_data %}
+            <div id="frame{{ forloop.counter }}" class="frame">
+                 data-road1="{{ snapshot_image.road_1image.url }}"
+                <img id="image{{ forloop.counter }}" src="{{ snapshot_image.road_1image.url }}" alt="Snapshot">
+                Frame {{ forloop.counter }}
+                <div id="countdown{{ forloop.counter }}" class="countdown">{{ light.countdown_timer }}s</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+        <div class="container">
+        <div class="section">
+            {% for light, vehicle_count, mask in light_data %}
+            <div id="frame{{ forloop.counter }}" class="frame"
+                 data-road2="{{ snapshot_image.road_2image.url }}">
+                <img id="image{{ forloop.counter }}" src="{{ snapshot_image.road_2image.url }}" alt="Snapshot">
+                Frame {{ forloop.counter }}
+                <div id="countdown{{ forloop.counter }}" class="countdown">{{ light.countdown_timer }}s</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+        <div class="container">
+        <div class="section">
+            {% for light, vehicle_count, mask in light_data %}
+            <div id="frame{{ forloop.counter }}" class="frame"
+                 data-road3="{{ snapshot_image.road_3image.url }}">
+                <img id="image{{ forloop.counter }}" src="{{ snapshot_image.road_3image.url }}" alt="Snapshot">
+                Frame {{ forloop.counter }}
+                <div id="countdown{{ forloop.counter }}" class="countdown">{{ light.countdown_timer }}s</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="container">
+        <div class="section">
+            {% for light, vehicle_count, mask in light_data %}
+            <div id="frame{{ forloop.counter }}" class="frame"
+                 data-road4="{{ snapshot_image.road_4image.url }}">
+                <img id="image{{ forloop.counter }}" src="{{ snapshot_image.road_4image.url }}" alt="Snapshot">
+                Frame {{ forloop.counter }}
+                <div id="countdown{{ forloop.counter }}" class="countdown">{{ light.countdown_timer }}s</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        const frames = [
+            {% for light in traffic_lights %}
+            { id: 'frame{{ forloop.counter }}', countdown: {{ light.countdown_timer }}, vehicles: 0 },
+            {% endfor %}
+        ];
+
+        let currentFrameIndex = 0;
+
+        function startFrameProcessing() {
+            const frame = frames[currentFrameIndex];
+            const frameElement = document.getElementById(frame.id);
+            const countdownElement = document.getElementById(`countdown${currentFrameIndex + 1}`);
+
+            // Change the frame color to green
+            frameElement.classList.add('green');
+
+            // Simulate vehicle counting process
+            setTimeout(() => {
+                // Randomly generate the number of vehicles (replace with actual logic)
+                frame.vehicles = Math.floor(Math.random() * 100);
+
+                countdownElement.textContent = `${frame.vehicles}s`;
+                frame.countdown = frame.vehicles;
+
+                // Start the countdown
+                const countdownInterval = setInterval(() => {
+                    if (frame.countdown > 0) {
+                        frame.countdown--;
+                        countdownElement.textContent = `${frame.countdown}s`;
+                    } else {
+                        clearInterval(countdownInterval);
+
+                        // Reset the frame to red and move to the next frame
+                        frameElement.classList.remove('green');
+                        currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+
+                        // Start the process for the next frame
+                        startFrameProcessing();
+                    }
+                }, 1000);
+            }, 3000); // Simulate initial processing delay
+        }
+
+        window.onload = function() {
+            startFrameProcessing(); // Start the loop when the page loads
+        };
+    </script>
+</body>
+</html>
