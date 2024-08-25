@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-%mpisqbx)65xe$rjvdz@d@4c15a!28j0f4#!q%!g!@tet(1s*c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'https://smarttraffic-management.onrender.com/']
 
 
 # Application definition
