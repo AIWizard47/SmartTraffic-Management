@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'traffic',
+    'background_task',
     'channels',
 ]
 ASGI_APPLICATION = 'traffic_management.asgi.application'
@@ -93,6 +94,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'OPTIONS': {
+        # ...
+        "timeout": 20,
+        # ...
     }
 }
 

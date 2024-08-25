@@ -4,13 +4,222 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Video</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        .file-input-wrapper .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        button[type="submit"] {
+            background-color: var(--secondary-color);
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #27ae60;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #video-preview {
+            max-width: 100%;
+            border-radius: var(--border-radius);
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress {
+            width: 0;
+            height: 100%;
+            background-color: var(--secondary-color);
+            transition: width 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
 </head>
 <body>
-    <h1>Upload Video</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Upload</button>
-    </form>
+    <div class="container fade-in">
+        <h1>Upload Video</h1>
+        <form method="post" enctype="multipart/form-data" id="upload-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    {% if field.name == 'video' %}
+                        <div class="file-input-wrapper">
+                            <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}" accept="video/*" required>
+                            <div class="btn">Choose Video</div>
+                        </div>
+                        <div class="file-name" id="file-name"></div>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <div class="preview-container">
+                <video id="video-preview" controls></video>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="upload-progress"></div>
+            </div>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const fileInput = document.querySelector('input[type="file"]');
+        const fileNameDisplay = document.getElementById('file-name');
+        const videoPreview = document.getElementById('video-preview');
+        const progressBar = document.querySelector('.progress-bar');
+        const progress = document.getElementById('upload-progress');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileNameDisplay.textContent = file.name;
+                const videoUrl = URL.createObjectURL(file);
+                videoPreview.src = videoUrl;
+                videoPreview.style.display = 'block';
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', this.action, true);
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progress.style.width = percentComplete + '%';
+                    progressBar.style.display = 'block';
+                }
+            };
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    alert('Video uploaded successfully!');
+                    // Redirect or update UI as needed
+                } else {
+                    alert('An error occurred during upload.');
+                }
+            };
+            xhr.send(formData);
+        });
+    </script>
 </body>
 </html>

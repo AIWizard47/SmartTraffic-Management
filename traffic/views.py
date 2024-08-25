@@ -1,8 +1,12 @@
 
 import time
+from datetime import timedelta
 from io import BytesIO
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+import subprocess
 from .models import VideoUpload, VehicleCount, ManualMask, TrafficLightState, SnapshotImage
 from ultralytics import YOLO
 import cv2
@@ -17,8 +21,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-
-
+from background_task import background
+from django.core.management import call_command
 # def create_mask(request):
 #     mask_instance, created = ManualMask.objects.get_or_create(road_name=road_name)
 #
@@ -86,7 +90,7 @@ def create_mask(request):
                 defaults={'mask_points': mask_points}
             )
             messages.success(request, "Mask saved successfully!")
-            return redirect('dashboard')
+            return redirect('/')
         else:
             messages.error(request, "There was an error saving the mask. Please try again.")
     else:
@@ -112,25 +116,6 @@ def create_mask(request):
         'images': images,
     }
     return render(request, 'create_mask.html', context)
-def start_process(request):
-    # Get the current traffic light states
-    traffic_lights = TrafficLightState.objects.all()
-    area_name = request.GET.get('area_name')  # or request.POST.get('area_name')
-    snapshot_image = SnapshotImage.objects.filter(area_name=area_name).first()
-    # Get the vehicle counts
-    vehicle_counts = VehicleCount.objects.all()
-
-    # Get the manual masks
-    masks = ManualMask.objects.all()
-
-    # Pair up traffic lights, vehicle counts, and masks
-    light_data = zip(traffic_lights, vehicle_counts, masks)
-
-    context = {
-        'light_data': light_data,
-        'snapshot_image': snapshot_image,  # Include snapshot image in the context
-    }
-    return render(request, 'start_process.html', context)
 
 def process_video(request):
     # Get the uploaded video
@@ -377,7 +362,8 @@ def dashboard(request):
 
     # Get the manual masks
     masks = ManualMask.objects.all()
-
+    snapshot_image = SnapshotImage.objects.filter(area_name='neelbad').first()
+    print(snapshot_image)
     context = {
         'traffic_lights': traffic_lights,
         'vehicle_counts': vehicle_counts,
@@ -385,30 +371,21 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
 
-
-def process_all_roads(request):
-    # Define road names in the order of processing
+@background(schedule=0)  # No delay in scheduling
+def process_all_roads_task():
     road_names = ["road_1", "road_2", "road_3", "road_4"]
-
-    # Load YOLO model
     model = YOLO('Yolo-weight/yolov8l.pt')
+    base_url = "http://127.0.0.1:8000/media/"
 
-    # Get base URL for media files
-    base_url = request.build_absolute_uri('/media/')
-
-    # Fetch SnapshotImage object
     snapshot_image = SnapshotImage.objects.filter(area_name='neelbad').first()
-
+    print(snapshot_image)
     if not snapshot_image:
-        return HttpResponseBadRequest("No snapshot image found.")
+        return
 
-    # Process each road sequentially
     i = 10
     while i:
-
         i -= 1
         for road_name in road_names:
-            # Inside process_video or process_image
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
                 "traffic_updates_group",
@@ -416,72 +393,53 @@ def process_all_roads(request):
                     "type": "send_update",
                 }
             )
-            # Fetch the image URL from the snapshot_image
             image_url = getattr(snapshot_image, f'road_{road_name[-1]}image').url
-
-            # Construct the full URL
             full_image_url = base_url + image_url.split('/media/')[1]
 
-            if not full_image_url:
-                return HttpResponseBadRequest(f"No image found for {road_name}.")
-
-            # Get the image and process it
             response = requests.get(full_image_url)
             if response.status_code != 200:
-                return HttpResponseBadRequest(f"Failed to fetch image from {full_image_url}")
+                continue
 
             img = Image.open(BytesIO(response.content))
             img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
 
-            # Get mask points from the database
             mask_obj = ManualMask.objects.filter(road_name=road_name).first()
             if mask_obj:
                 data = json.loads(mask_obj.mask_points)
                 mask_points = [(int(item['x']), int(item['y'])) for item in data]
             else:
-                return HttpResponseBadRequest(f"No mask found for {road_name}.")
+                continue
 
-            # Create the mask
             mask = np.zeros(img.shape[:2], dtype=np.uint8)
             contour = np.array(mask_points, dtype=np.int32).reshape((-1, 1, 2))
             cv2.fillPoly(mask, [contour], 255)
 
-            # Run YOLO model on the image
             results = model(img, stream=True)
-
-            # Dictionary to store the count of each vehicle type
-            vehicle_counts = {'car': 0, 'motorcycle': 0, 'bus': 0, 'truck': 0}
+            vehicle_counts = {'car': 0, 'motorbike': 0, 'bus': 0, 'truck': 0}
             total_count = 0
 
-            # Process detection results
             for r in results:
                 boxes = r.boxes
                 for box in boxes:
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-                    # Check if the center of the bounding box is within the mask
                     center_x = (x1 + x2) // 2
                     center_y = (y1 + y2) // 2
                     if cv2.pointPolygonTest(contour, (center_x, center_y), False) >= 0:
                         idx = box.cls[0]
                         nameOfVehicle = model.names[int(idx)]
-
                         if nameOfVehicle in vehicle_counts:
                             vehicle_counts[nameOfVehicle] += 1
                             total_count += 1
 
-            # Save the counts to the database
             for vehicle_type, count in vehicle_counts.items():
+
                 if vehicle_type == 'bus':
-                    count += 5
                     total_count += 5
                 elif vehicle_type == 'truck':
-                    count += 3
                     total_count += 3
                 elif vehicle_type == 'car':
-                    count += 2
                     total_count += 2
-
+                print(total_count,vehicle_counts,vehicle_type)
                 VehicleCount.objects.update_or_create(
                     vehicle_type=vehicle_type,
                     defaults={
@@ -490,22 +448,156 @@ def process_all_roads(request):
                     }
                 )
 
-            # Update or create the traffic light state for the given road
-            countdown_timer = max(min(45, total_count), 10)
-            traffic_light, created = TrafficLightState.objects.update_or_create(
-                road_name=road_name,
-                defaults={
-                    'countdown_timer': countdown_timer,
-                }
+                traffic_light, created = TrafficLightState.objects.update_or_create(
+                    road_name=road_name,
+                    defaults={
+                        'state': 'Green' if total_count > 0 else 'Red',
+                        'countdown_timer': max(min(45, total_count), 10),
+                    }
             )
-
-            # Start the countdown for the current road
             start_countdown(traffic_light)
 
-            # If total_count is 0, move to the next road
-            if total_count == 0:
-                continue  # Move to the next road in the sequence
-    return redirect("/")
+def process_all_roads(request):
+    # # Define road names in the order of processing
+    # road_names = ["road_1", "road_2", "road_3", "road_4"]
+    #
+    # # Load YOLO model
+    # model = YOLO('Yolo-weight/yolov8l.pt')
+    #
+    # # Get base URL for media files
+    # base_url = request.build_absolute_uri('/media/')
+    #
+    # # Fetch SnapshotImage object
+    # snapshot_image = SnapshotImage.objects.filter(area_name='neelbad').first()
+    #
+    # if not snapshot_image:
+    #     return HttpResponseBadRequest("No snapshot image found.")
+    #
+    # # Process each road sequentially
+    # i = 10
+    # while i:
+    #
+    #     i -= 1
+    #     for road_name in road_names:
+    #         # Inside process_video or process_image
+    #         channel_layer = get_channel_layer()
+    #         async_to_sync(channel_layer.group_send)(
+    #             "traffic_updates_group",
+    #             {
+    #                 "type": "send_update",
+    #             }
+    #         )
+    #         # Fetch the image URL from the snapshot_image
+    #         image_url = getattr(snapshot_image, f'road_{road_name[-1]}image').url
+    #
+    #         # Construct the full URL
+    #         full_image_url = base_url + image_url.split('/media/')[1]
+    #
+    #         if not full_image_url:
+    #             return HttpResponseBadRequest(f"No image found for {road_name}.")
+    #
+    #         # Get the image and process it
+    #         response = requests.get(full_image_url)
+    #         if response.status_code != 200:
+    #             return HttpResponseBadRequest(f"Failed to fetch image from {full_image_url}")
+    #
+    #         img = Image.open(BytesIO(response.content))
+    #         img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+    #
+    #         # Get mask points from the database
+    #         mask_obj = ManualMask.objects.filter(road_name=road_name).first()
+    #         if mask_obj:
+    #             data = json.loads(mask_obj.mask_points)
+    #             mask_points = [(int(item['x']), int(item['y'])) for item in data]
+    #         else:
+    #             return HttpResponseBadRequest(f"No mask found for {road_name}.")
+    #
+    #         # Create the mask
+    #         mask = np.zeros(img.shape[:2], dtype=np.uint8)
+    #         contour = np.array(mask_points, dtype=np.int32).reshape((-1, 1, 2))
+    #         cv2.fillPoly(mask, [contour], 255)
+    #
+    #         # Run YOLO model on the image
+    #         results = model(img, stream=True)
+    #
+    #         # Dictionary to store the count of each vehicle type
+    #         vehicle_counts = {'car': 0, 'motorcycle': 0, 'bus': 0, 'truck': 0}
+    #         total_count = 0
+    #
+    #         # Process detection results
+    #         for r in results:
+    #             boxes = r.boxes
+    #             for box in boxes:
+    #                 x1, y1, x2, y2 = map(int, box.xyxy[0])
+    #
+    #                 # Check if the center of the bounding box is within the mask
+    #                 center_x = (x1 + x2) // 2
+    #                 center_y = (y1 + y2) // 2
+    #                 if cv2.pointPolygonTest(contour, (center_x, center_y), False) >= 0:
+    #                     idx = box.cls[0]
+    #                     nameOfVehicle = model.names[int(idx)]
+    #
+    #                     if nameOfVehicle in vehicle_counts:
+    #                         vehicle_counts[nameOfVehicle] += 1
+    #                         total_count += 1
+    #
+    #         # Save the counts to the database
+    #         for vehicle_type, count in vehicle_counts.items():
+    #             if vehicle_type == 'bus':
+    #                 count += 5
+    #                 total_count += 5
+    #             elif vehicle_type == 'truck':
+    #                 count += 3
+    #                 total_count += 3
+    #             elif vehicle_type == 'car':
+    #                 count += 2
+    #                 total_count += 2
+    #
+    #             VehicleCount.objects.update_or_create(
+    #                 vehicle_type=vehicle_type,
+    #                 defaults={
+    #                     'road_name': road_name,
+    #                     'count': count,
+    #                 }
+    #             )
+    #
+    #         # Update or create the traffic light state for the given road
+    #         countdown_timer = max(min(45, total_count), 10)
+    #         traffic_light, created = TrafficLightState.objects.update_or_create(
+    #             road_name=road_name,
+    #             defaults={
+    #                 'countdown_timer': countdown_timer,
+    #             }
+    #         )
+    #
+    #         # Start the countdown for the current road
+    #         start_countdown(traffic_light)
+    #
+    #         # If total_count is 0, move to the next road
+    #         if total_count == 0:
+    #             continue  # Move to the next road in the sequence
+    # return redirect("/")
+
+
+
+    # process_all_roads_task(schedule=0)  # This starts the background task
+    # process_all_roads_task(schedule=0)
+    # process_all_roads_task = process_all_roads_task.now
+    # return redirect('dashboard')
+
+    venv_python = os.path.join('D:\\VS_code\\VSCode\\ObjectDitections\\venv12.5', 'Scripts', 'python.exe')
+    try:
+        # Run the custom management command to start the task worker
+        subprocess.Popen([venv_python, 'manage.py', 'process_tasks'])
+        print('WORKING +++++++++++++++++++++++++++>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        return redirect('dashboard')  # Redirect after starting the worker
+
+    except Exception as e:
+        print(e)
+        return HttpResponse(f"An error occurred: {e}")
+
+
+
 
 # def start_countdown(traffic_light):
 #     # Implement the logic to start the countdown timer

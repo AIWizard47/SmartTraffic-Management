@@ -2,68 +2,186 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Draw Polygon Mask</title>
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select, input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
         #canvas-container {
             position: relative;
+            margin-top: 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
         }
+
         #canvas {
-            border: 1px solid black;
+            display: block;
             cursor: crosshair;
         }
+
         .button-group {
-            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
         }
-        .button-group button {
-            margin-right: 5px;
+
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        textarea {
-            width: 100%;
-            height: 100px;
-            margin-top: 10px;
-            resize: none;
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
         }
     </style>
 </head>
 <body>
+    <div class="container fade-in">
+        <h1>Draw Polygon for Mask</h1>
 
-    <h1>Draw Polygon for Mask</h1>
+        <div class="form-group">
+            <label for="image-select">Select Image:</label>
+            <select id="image-select" class="form-control">
+                {% for image in images %}
+                    <option value="{{ image.url }}">{{ image.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <div>
-        <label for="image-select">Select Image:</label>
-        <select id="image-select">
-            {% for image in images %}
-                <option value="{{ image.url }}">{{ image.label }}</option>
-            {% endfor %}
-        </select>
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+
+        <div class="button-group">
+            <button id="undo-button" class="btn btn-secondary" type="button">Undo Last Point</button>
+            <button id="reset-button" class="btn btn-danger" type="button">Reset</button>
+            <button id="close-polygon-button" class="btn" type="button">Close Polygon</button>
+        </div>
+
+        <form method="POST" id="mask-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="road_name">Road Name:</label>
+                {{ form.road_name }}
+            </div>
+            <div class="form-group">
+                <label for="mask_points">Mask Points (JSON):</label>
+                {{ form.mask_points }}
+            </div>
+            <button type="submit" class="btn">Save Mask</button>
+        </form>
     </div>
-
-    <div id="canvas-container">
-        <canvas id="canvas"></canvas>
-    </div>
-
-    <div class="button-group">
-        <button id="undo-button" type="button">Undo Last Point</button>
-        <button id="reset-button" type="button">Reset</button>
-        <button id="close-polygon-button" type="button">Close Polygon</button>
-    </div>
-
-    <form method="POST">
-        {% csrf_token %}
-        <label for="road_name">Road Name:</label>
-        {{ form.road_name }}
-
-        <label for="mask_points">Mask Points (JSON):</label>
-        {{ form.mask_points }}
-
-        <button type="submit">Save Mask</button>
-    </form>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const image = new Image();
+        const tooltip = document.getElementById('tooltip');
         let points = [];
         let polygonClosed = false;
 
@@ -80,31 +198,46 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = 'red';
-            ctx.strokeStyle = 'red';
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.5)';
+            ctx.strokeStyle = '#3498db';
             ctx.lineWidth = 2;
 
-            for (let i = 0; i < points.length; i++) {
-                const point = points[i];
+            if (points.length > 2) {
                 ctx.beginPath();
-                ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-                ctx.fill();
-
-                if (i > 0) {
-                    ctx.beginPath();
-                    ctx.moveTo(points[i - 1].x, points[i - 1].y);
-                    ctx.lineTo(point.x, point.y);
-                    ctx.stroke();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
                 }
-            }
-
-            if (points.length > 2 && polygonClosed) {
-                ctx.beginPath();
-                ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
-                ctx.lineTo(points[0].x, points[0].y);
+                if (polygonClosed) {
+                    ctx.closePath();
+                }
+                ctx.fill();
                 ctx.stroke();
             }
+
+            points.forEach((point, index) => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = index === 0 ? '#e74c3c' : '#3498db';
+                ctx.fill();
+                ctx.stroke();
+            });
         }
+
+        canvas.addEventListener('mousemove', function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            tooltip.style.left = `${event.clientX + 10}px`;
+            tooltip.style.top = `${event.clientY + 10}px`;
+            tooltip.textContent = `X: ${Math.round(x)}, Y: ${Math.round(y)}`;
+            tooltip.style.opacity = 1;
+        });
+
+        canvas.addEventListener('mouseout', function() {
+            tooltip.style.opacity = 0;
+        });
 
         canvas.addEventListener('click', function(event) {
             if (polygonClosed) {
@@ -148,13 +281,20 @@
             redraw();
         });
 
-        // Dropdown change event to load the selected image
         document.getElementById('image-select').addEventListener('change', function() {
             const selectedImageUrl = this.value;
             loadImage(selectedImageUrl);
         });
 
-        // Load the first image by default
+        document.getElementById('mask-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (points.length < 3 || !polygonClosed) {
+                alert("Please complete the polygon before saving the mask.");
+                return;
+            }
+            this.submit();
+        });
+
         loadImage(document.getElementById('image-select').value);
     </script>
 </body>
