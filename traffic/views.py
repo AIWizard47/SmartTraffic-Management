@@ -584,11 +584,9 @@ def process_all_roads(request):
     # process_all_roads_task(schedule=0)
     # process_all_roads_task = process_all_roads_task.now
     # return redirect('dashboard')
-
-    venv_python = os.path.join('D:\\VS_code\\VSCode\\ObjectDitections\\venv12.5', 'Scripts', 'python.exe')
     try:
         # Run the custom management command to start the task worker
-        subprocess.Popen([venv_python, 'manage.py', 'process_tasks'])
+        subprocess.Popen(['python', 'manage.py', 'process_tasks'])
         print('WORKING +++++++++++++++++++++++++++>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
         return redirect('dashboard')  # Redirect after starting the worker
 
