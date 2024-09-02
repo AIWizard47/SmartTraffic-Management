@@ -375,7 +375,8 @@ def dashboard(request):
 def process_all_roads_task():
     road_names = ["road_1", "road_2", "road_3", "road_4"]
     model = YOLO('Yolo-weight/yolov8l.pt')
-    base_url = "http://127.0.0.1:8000/media/"
+    #base_url = "http://127.0.0.1:8000/media/"
+    base_url = "https://smarttraffic-management.onrender.com/media/"
 
     snapshot_image = SnapshotImage.objects.filter(area_name='neelbad').first()
     print(snapshot_image)
