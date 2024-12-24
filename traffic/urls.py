@@ -1,6 +1,7 @@
 # traffic/urls.py
 from django.urls import path
 from . import views
+from .views import CreateMaskAPI, DashboardDataAPIView, UploadedImageGroupAPI
 
 urlpatterns = [
     path('', views.index, name='index'),  # New index route
@@ -14,4 +15,10 @@ urlpatterns = [
     path('get-updates/', views.get_updates, name='get_updates'),
     path('api/current-state/', views.get_current_state, name='get_current_state'),
     # path('update_timer/<int:light_id>/', views.update_timer, name='update_timer'),
+    path('api/dashboard-data/', DashboardDataAPIView.as_view(), name='dashboard-data'),
+    path('api/create-mask/', CreateMaskAPI.as_view(), name='create_mask_api'),
+    path('api/upload-image/', UploadedImageGroupAPI.as_view(), name='upload_images'),
+    path('chalaan/', views.chalaan,name='challan'),
+    path('ambulance/', views.ambulance, name='ambulance'),
+
 ]

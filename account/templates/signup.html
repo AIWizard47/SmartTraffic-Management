@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block head %}
+  <div class="login-body">
+    <div class="container"></div>
+    <div class="box">
+      <form method="POST" class="form">
+        {% csrf_token %}
+        <div class="input-group input-upName">
+          <input type="text" placeholder="" name="name" required />
+          <label class="upName">Name</label>
+        </div>
+        <div class="input-group input-upEmail">
+          <input type="email" placeholder="" name="email" required />
+          <label class="upEmail">Email</label>
+        </div>
+        <div class="input-group input-upNumber">
+          <input type="tel" placeholder="" name="number" required />
+          <label class="upNumber">Phone Number</label>
+        </div>
+        <div class="input-group input-upPassword">
+          <input type="password" placeholder="" name="password" required />
+          <label class="upPassword">Password</label>
+        </div>
+        <div class="input-group input-upCpassword">
+          <input type="password" placeholder="" name="confirm_password" required />
+          <label class="upCpassword">Confirm Password</label>
+        </div>
+        <div class="input-group">
+          <input type="submit" />
+        </div>
+        <div class="downline-singin">
+          <p style="color: white; display: inline;">If you Already Sign-Up then -</p>
+          <a href="{% url 'login' %}" style="color: white; text-decoration: underline;">Sign-In</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

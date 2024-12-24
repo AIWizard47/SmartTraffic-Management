@@ -1,0 +1,30 @@
+<<<<<<< HEAD
+{
+  "builds": [
+    {
+      "src": "traffic_management/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "traffic_management/wsgi.py"
+    }
+  ]
+=======
+{
+  "builds": [
+    {
+      "src": "traffic_management/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "traffic_management/wsgi.py"
+    }
+  ]
+>>>>>>> 512670324486e6680bbcc4d80aa07ed0a3c6f07b
+}

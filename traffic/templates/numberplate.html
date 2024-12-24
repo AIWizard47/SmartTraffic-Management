@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challan System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .details {
+            background-color: #e9e9e9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .details p {
+            margin: 10px 0;
+        }
+        .details strong {
+            display: inline-block;
+            width: 120px;
+        }
+        #checkButton {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        #checkButton:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Challan System</h1>
+        <div class="video-container">
+            <video controls>
+                <source src="{{ vid.video.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <button id="checkButton" onclick="checkChallan()">Check Challan</button>
+        <div id="detailsSection" class="details" style="display: none;">
+            <h2>Challan Details</h2>
+            <p><strong>Name:</strong> <span id="name"></span></p>
+            <p><strong>Number Plate:</strong> <span id="plate"></span></p>
+            <p><strong>Phone Number:</strong> <span id="phone"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function checkChallan() {
+            // Simulating server response
+            setTimeout(() => {
+                // This would be replaced with actual server communication
+                const data = {
+                    name: 'Suraj',
+                    plate: 'JH22S3231',
+                    phone: '+19 9323423142'
+                };
+
+                document.getElementById('name').textContent = data.name;
+                document.getElementById('plate').textContent = data.plate;
+                document.getElementById('phone').textContent = data.phone;
+                document.getElementById('detailsSection').style.display = 'block';
+            }, 1000); // Simulating a 1-second delay
+        }
+    </script>
+</body>
+</html>
+

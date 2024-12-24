@@ -10,6 +10,5 @@ class Command(BaseCommand):
 
         # Define the path to your Python executable within the virtual environment
         venv_python = os.path.join('D:\\VS_code\\VSCode\\ObjectDitections\\venv12.5', 'Scripts', 'python.exe')
-
         # Run the background task worker using the virtual environment's Python
         subprocess.call([venv_python, 'manage.py', 'process_tasks'])

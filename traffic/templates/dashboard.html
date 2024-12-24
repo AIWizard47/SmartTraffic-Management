@@ -98,17 +98,6 @@
             overflow: hidden;
             border-radius: 8px;
         }
-        .car {
-            position: absolute;
-            width: 40px;
-            height: 20px;
-            background-color: #2196F3;
-            animation: drive 5s linear infinite;
-        }
-        @keyframes drive {
-            0% { left: -40px; }
-            100% { left: 100%; }
-        }
         .recommendations {
             list-style-type: none;
             padding: 0;
@@ -123,6 +112,16 @@
             position: absolute;
             left: 0;
         }
+        .traffic-flow img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .traffic-flow video {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
     </style>
 </head>
 <body>
@@ -141,16 +140,28 @@
                 <h2>Vehicle Counts</h2>
                 <ul id="vehicle-counts-list">
                     {% for count in vehicle_counts %}
-                    <li>{{ count.vehicle_type }}: {{ count.count }}</li>
+                    {% if count.count > 0 %}
+                        <li>{{ count.vehicle_type }}: {{ count.count }}</li>
+                    {% endif %}
                     {% endfor %}
                 </ul>
+                <button>Alert</button>
             </div>
             <div class="card">
-                <h2>Traffic Flow</h2>
+<!--                <h2>Traffic Flow</h2>-->
                 <div class="traffic-flow">
-                    <div class="car"></div>
-                </div>
-            </div>
+    {% if green_road_video %}
+        <video src="{{ green_road_video.video.url }}" controls autoplay loop>
+            Your browser does not support the video tag.
+        </video>
+    {% else %}
+        <p>No video available for the current green light road.</p>
+    {% endif %}
+</div>
+
+
+
+
             <div class="card traffic-lights">
                 <h2>Traffic Lights</h2>
                 {% for light in traffic_lights %}
@@ -177,6 +188,31 @@
         </div>
     </div>
     <script>
+        function saveVideoTime() {
+        const video = document.querySelector('video');
+        if (video) {
+            localStorage.setItem('videoTime', video.currentTime);
+        }
+    }
+
+    // Restore the video to its saved time after the page reloads
+    function restoreVideoTime() {
+        const video = document.querySelector('video');
+        const savedTime = localStorage.getItem('videoTime');
+        if (video && savedTime) {
+            video.currentTime = parseFloat(savedTime);
+            video.play(); // Ensure playback resumes automatically
+        }
+    }
+
+    // Initialize the page and set up the event listener for beforeunload
+    function initPage() {
+        restoreVideoTime();
+        window.addEventListener('beforeunload', saveVideoTime);
+    }
+
+    // Run the initialization
+    document.addEventListener('DOMContentLoaded', initPage);
         function updateTime() {
             const now = new Date();
             document.getElementById('current-time').textContent = now.toLocaleTimeString();

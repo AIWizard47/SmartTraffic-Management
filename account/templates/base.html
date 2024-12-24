@@ -1,0 +1,311 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+<!--    <link rel="stylesheet" href="{% static 'css/base.css' %}" />-->
+<!--    <link rel="stylesheet" href="{% static 'css/login.css' %}" />-->
+<!--    <link rel="stylesheet" href="{% static 'css/index.css' %}" />-->
+<!--    <link rel="stylesheet" href="{% static 'css/about.css' %}" />-->
+<!--    <link rel="stylesheet" href="{% static 'css/service.css' %}" />-->
+  </head>
+  <style>
+      * {
+    margin: 0;
+    padding: 0;
+}
+body{
+    background: black;
+}
+.Fbody{
+    width: 100%;
+    min-height: 100vh;
+}
+#nav-div {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgb(0, 0, 0);
+    background: linear-gradient(68deg, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 100%);
+    padding: 10px 0;
+    backdrop-filter: blur(2px);
+    z-index: 1000; /* Ensures the nav stays on top of other content */
+    box-shadow: 0 0 10px whitesmoke;
+}
+#nav-ul {
+    list-style-type: none;
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    margin: 0;
+}
+
+/* List item styling */
+#nav-ul li {
+    margin: 10px 25px;
+}
+
+/* Link styling */
+#nav-ul li a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+    transform: scale(1.2);
+    display: inline-block;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+/* Hover effect for links */
+#nav-ul li a:hover {
+    transform: scale(1.6);
+}
+.login-body{
+    background: url("/static/image/loginbg.png") rgba(0, 0, 0)center no-repeat;
+    background-position: calc(80% + 75px) center;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    top: 0;
+    left: 0;
+    display: relative;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.container{
+    width: 28vw;
+    height: 60vh;
+    background: rgb(120, 120, 120);
+    border-radius: 20px;
+    transform: translateY(35%) translateX(225%);
+    backdrop-filter: blur(2px);
+    opacity: 0.3;
+    box-shadow: 0 0 400px whitesmoke;
+    border: 2px solid rgb(255, 255, 255);
+}
+
+.box {
+    position: fixed;
+    width: 20vw;
+    padding: 20px;
+    transform: translate(80%, -60%);
+}
+.form{
+    align-items: center;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="password"] {
+    width: 20vw;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    backdrop-filter: blur(2px);
+    background: transparent;
+    border: 2px solid whitesmoke;
+    outline: none;
+    color:white;
+    letter-spacing:1px ;
+    font-weight: bolder;
+}
+.input-email label{
+    position: absolute;
+    top: 11%;
+    left: 15px;
+    transform: translateX(10%);
+    color: white;
+    font-size: 19px;
+    transition: .3s;
+    z-index: 0;
+
+}
+.input-password label{
+    position: absolute;
+    top: 39%;
+    left: 15px;
+    transform: translateX(9%);
+    color: white;
+    font-size: 19px;
+    transition: .3s;
+
+}
+input:focus ~ .inEmail,
+input:valid ~ .inEmail{
+    top: 4%;
+    font-size: 13px;
+    padding: 0 10px;
+    background: black;
+
+}
+input:focus ~ .inPassword,
+input:valid ~ .inPassword{
+    top: 32%;
+    font-size: 13px;
+    padding: 0 10px;
+    background: black;
+}
+
+.input-upName label{
+    position: absolute;
+    top: 6%;
+    left: 15px;
+    transform: translateX(10%);
+    color: white;
+    font-size: 19px;
+    transition: .3s;
+}
+.input-upEmail label{
+    position: absolute;
+    top: 21%;
+    left: 15px;
+    transform: translateX(10%);
+    color: white;
+    font-size: 19px;
+    transition: .3s;
+}
+.input-upNumber label{
+    position: absolute;
+    top: 36%;
+    left: 15px;
+    transform: translateX(7%);
+    color: white;
+    font-size: 19px;
+    transition: .3s;
+}
+.input-upPassword label{
+    position: absolute;
+    top: 51%;
+    left: 15px;
+    transform: translateX(10%);
+    color: white;
+    font-size: 19px;
+    transition: .3s;
+}
+.input-upCpassword label{
+    position: absolute;
+    top: 66%;
+    left: 15px;
+    transform: translateX(5%);
+    color: white;
+    font-size: 19px;
+    transition: .3s;
+}
+input:focus ~ .upName,
+input:valid ~ .upName{
+    top: 2%;
+    font-size: 13px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: black;
+}
+input:focus ~ .upEmail,
+input:valid ~ .upEmail{
+    top: 18%;
+    font-size: 13px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: black;
+}
+input:focus ~ .upNumber,
+input:valid ~ .upNumber{
+    top: 33%;
+    font-size: 13px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: black;
+}
+input:focus ~ .upPassword,
+input:valid ~ .upPassword{
+    top: 48%;
+    font-size: 13px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: black;
+}
+input:focus ~ .upCpassword,
+input:valid ~ .upCpassword{
+    top: 63%;
+    font-size: 13px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: black;
+}
+
+input[type="submit"] {
+    width: 21vw;
+    padding: 10px;
+    background: #333;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    border:none;
+    outline: none;
+    color:white;
+    letter-spacing:1px ;
+    font-weight: bolder;
+    transition: .1s;
+}
+
+
+input[type="submit"]:hover {
+    background: #000000;
+    border: 2px solid whitesmoke;
+    box-shadow: 0 0 25px whitesmoke;
+}
+
+.downline-sign-up{
+    display: flex;
+}
+.downline-singin{
+    display:flex;
+}
+  </style>
+  <body>
+    <section class="Fbody">
+      <div id="nav-div">
+        <nav id="nav-bar">
+          <ul id="nav-ul">
+            <li>
+              <a href="{% url 'index' %}" id="nav-text">Home</a>
+            </li>
+<!--            <li>-->
+<!--              <a href="#" id="nav-text">Services</a>-->
+<!--            </li>-->
+<!--            <li>-->
+<!--              <a href="#" id="nav-text">About-US</a>-->
+<!--            </li>-->
+<!--            <li>-->
+<!--              <a href="#contact" id="nav-text">Contact</a>-->
+<!--            </li>-->
+            {% if not user.is_authenticated %}
+            <li>
+              <a href="{% url 'login' %}" id="nav-text">Login</a>
+            </li>
+            {% else %}
+            <li>
+              <a href="#" id="nav-text">Logout</a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% block head %}
+      {% endblock head %}
+    </div>
+  </section>
+  </body>
+</html>

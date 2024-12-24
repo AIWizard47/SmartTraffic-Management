@@ -1,224 +1,766 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Management Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartFlow AI - Intelligent Traffic Management System</title>
+
     <style>
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2ecc71;
-            --background-color: #ecf0f1;
-            --text-color: #34495e;
-            --header-height: 70px;
-        }
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+:root {
+  --primary-color: #4ade80;
+  --secondary-color: #3b82f6;
+  --background-color: #f0f2f5;
+  --text-color: #1a2b4b;
+  --card-bg-color: #ffffff;
+  --navbar-color: #1a2b4b;
+}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
 
-        header {
-            background: var(--primary-color);
-            color: #ffffff;
-            padding: 20px 0;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
-        nav ul {
-            display: flex;
-            justify-content: flex-end;
-            list-style: none;
-        }
+.ministry-header {
+  background-color: var(--navbar-color);
+  color: #ffffff;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 0.9rem;
+}
 
-        nav ul li {
-            margin-left: 20px;
-        }
+.navbar {
+  background-color: var(--navbar-color);
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
 
-        nav ul li a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s ease;
-        }
+.nav-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-        nav ul li a:hover {
-            color: var(--secondary-color);
-        }
+.logo {
+  display: flex;
+  align-items: center;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
 
-        .main-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            padding: 100px 0 50px;
-        }
+.logo-icon {
+  font-size: 2rem;
+  margin-right: 10px;
+}
 
-        .card {
-            background: #ffffff;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        }
+.nav-links a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
 
-        h1, h2 {
-            margin-bottom: 20px;
-            color: var(--primary-color);
-        }
+.nav-links a:hover {
+  color: var(--primary-color);
+}
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
 
-        .form-group select,
-        .form-group input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
+.button-primary {
+  background-color: var(--primary-color);
+  color: var(--navbar-color);
+}
 
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: var(--secondary-color);
-            color: #ffffff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s ease;
-            text-decoration: none;
-        }
+.button-primary:hover {
+  background-color: #22c55e;
+  transform: translateY(-2px);
+}
 
-        .btn:hover {
-            background: var(--primary-color);
-        }
+.hero-section {
+  background: linear-gradient(135deg, var(--navbar-color), var(--secondary-color));
+  color: #ffffff;
+  padding: 100px 0;
+  text-align: center;
+}
 
-        .actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
 
-        .card {
-            animation: fadeIn 0.5s ease-out;
-        }
+.hero-description {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 30px;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.features-section {
+  padding: 80px 0;
+  background-color: var(--card-bg-color);
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 60px;
+  color: var(--navbar-color);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.feature-card {
+  background-color: var(--card-bg-color);
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+}
+
+.feature-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--navbar-color);
+}
+
+.feature-description {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.login-section,
+.dashboard-section {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.login-card,
+.dashboard-card {
+  background-color: var(--card-bg-color);
+  border-radius: 8px;
+  padding: 40px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-title,
+.dashboard-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+  color: var(--navbar-color);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: var(--navbar-color);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #22c55e;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-card {
+  background-color: var(--card-bg-color);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.dashboard-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--navbar-color);
+}
+
+.dashboard-card-content {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.mobile-menu-button {
+  display: none;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--navbar-color);
+  z-index: 1001;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.mobile-menu.active {
+  display: flex;
+}
+
+.mobile-menu a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.mobile-menu a:hover {
+  color: var(--primary-color);
+}
+
+.close-menu-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+
+  .nav-links,
+  .auth-buttons {
+    display: none;
+  }
+
+  .mobile-menu-button {
+    display: block;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* map */
+#map {
+  width: 90%;
+  height: 600px;
+  border-radius: 35px;
+  margin-bottom: 40px;
+}
+
+.map-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.map-container h1 {
+  font-size: 35px;
+  padding: 10px 0;
+}
+
+
+.mobile-menu {
+  display: none;
+}
+
+.mobile-menu.active {
+  display: block;
+}
+
+/*
+footer */
+/* Assuming you're using a CSS framework like Tailwind CSS for the utility classes */
+
+/* For the section: */
+.py-20 {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.bg-footer {
+  background-color: #1a2b4b;
+}
+
+.text-white {
+  color: white;
+}
+
+/* For the container: */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.px-4 {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* For the headings: */
+.text-3xl {
+  font-size: 2.25rem;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+/* For the paragraph: */
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.text-slate-300 {
+  color: #9ca3af;
+}
+
+.mb-8 {
+  margin-bottom: 32px;
+}
+
+/* For the button: */
+.bg-green-500 {
+  background-color: #22c55e;
+}
+
+.hover:bg-green-600 {
+  background-color: #16a34a;
+}
+
+.text-lg {
+  font-size: 1rem;
+}
+
+.px-8 {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.py-3 {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+/* For the hover and active effects: */
+.hover:scale-105 {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+.active:scale-95 {
+  transform: scale(0.95);
+}
     </style>
-</head>
-<body>
-    <header>
-        <div class="container">
-            <nav>
-                <ul>
-                    <li><a href="#" class="btn">Home</a></li>
-                </ul>
-            </nav>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFYSX43X78kBwA4brrGzPVU_xbNRod3nM&callback&callback=initMap"
+      async
+      defer
+    ></script>
+    <script>
+
+function toggleMobileMenu() {
+    const mobileMenu = document.querySelector('.mobile-menu');
+    mobileMenu.classList.toggle('active');
+}
+
+function showLogin(type) {
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('login-section').style.display = 'flex';
+    document.querySelector('.login-title').textContent = type === 'admin' ? 'Admin Login' : 'User Login';
+}
+
+function handleLogin(event) {
+    event.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    // Simulate login - replace with actual authentication logic
+    if (email && password) {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('dashboard-section').style.display = 'block';
+    } else {
+        alert('Please enter valid credentials');
+    }
+}
+
+
+// map
+
+function initMap() {
+  console.log('Google Maps API Loaded');
+  const bhopalCenter = { lat: 23.2599, lng: 77.4126 }; // Bhopal center
+
+  // Create the map
+  const map = new google.maps.Map(document.getElementById("map"), {
+    center: bhopalCenter,
+    zoom: 12,
+  });
+
+  console.log('Map initialized');
+
+  // List of places to pin in Bhopal
+  const places = [
+    { name: "Upper Lake", position: { lat: 23.2345, lng: 77.3963 } },
+    { name: "Van Vihar National Park", position: { lat: 23.2307, lng: 77.3831 } },
+    { name: "Taj-ul-Masajid", position: { lat: 23.2605, lng: 77.4044 } },
+    { name: "DB City Mall", position: { lat: 23.2334, lng: 77.4325 } },
+    { name: "Bharat Bhavan", position: { lat: 23.2477, lng: 77.3967 } },
+  ];
+
+  // Add markers for each place
+  places.forEach(place => {
+    const marker = new google.maps.Marker({
+      position: place.position,
+      map: map,
+      title: place.name,
+    });
+
+    // Add an info window for each marker
+    const infoWindow = new google.maps.InfoWindow({
+      content: `<h3>${place.name}</h3>`,
+    });
+
+    marker.addListener("click", () => {
+      infoWindow.open(map, marker);
+    });
+  });
+}
+
+window.onload = function() {
+  initMap();  // Call your map initialization function after the window has fully loaded
+};
+
+
+    </script>
+  </head>
+  <body>
+    <header class="ministry-header">Department of science & techonology</header>
+
+    <nav class="navbar">
+      <div class="container nav-content">
+        <a href="/index.html" class="logo">
+          <span class="logo-icon">⚡</span>
+          <span>SmartFlow AI</span>
+        </a>
+        <div class="nav-links">
+            <a href="{% url 'index' %}" class="nav-text">Home</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'upload_image' %}" class="nav-text">Upload</a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="nav-text">Upload</a>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="nav-text">Dashboard</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="nav-text">Dashboard</a>
+                    {% endif %}
+                    <a href="" class="nav-text">About</a>
+                    <a href="" class="nav-text">ContactUs</a>
+
+
         </div>
-    </header>
+        <div class="auth-buttons">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'login' %}" class="button button-primary">Login</a>
+                        <a href="{% url 'signUp' %}" class="button button-primary">Sign up</a>
+                    {% else %}
+                        <a href="{% url 'logout' %}" class="button button-primary">LogOut</a>
+                    {% endif %}
 
-    <div class="container">
-        <main class="main-content">
-            <section class="card">
-                <h1>Traffic Management Dashboard</h1>
-                <form id="main-form" method="get">
-                    <div class="form-group">
-                        <label for="area_name">Select Area:</label>
-                        <select id="area_name" name="area_name">
-                            <option value="neelbad">Neelbad</option>
-                            <option value="downtown">Downtown</option>
-                            <option value="suburb">Suburb</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <button type="button" id="create-mask" class="btn">Create/Update Mask</button>
-                    </div>
-                </form>
-            </section>
+        </div>
+        <button class="mobile-menu-button" onclick="toggleMobileMenu()">
+          ☰
+        </button>
 
-            <section class="card">
-                <h2>Quick Actions</h2>
-                <div class="actions">
-                    <a href="{% url 'get_current_state' %}" class="btn">API</a>
-                    <a href="{% url 'process_all_roads' %}" class="btn">Start</a>
-                    <a href="{% url 'upload_video' %}" class="btn">Upload Video</a>
-                    <a href="{% url 'upload_image' %}" class="btn">Upload Image</a>
-                    <a href="{% url 'dashboard' %}" class="btn">View Dashboard</a>
-                </div>
-            </section>
 
-            <section class="card">
-                <h2>Traffic Statistics</h2>
-                <div id="traffic-stats">
-                    <!-- Placeholder for traffic statistics -->
-                    <p>Loading statistics...</p>
-                </div>
-            </section>
-        </main>
+
+      </div>
+    </nav>
+
+    <div class="mobile-menu">
+      <button class="close-menu-button" onclick="toggleMobileMenu()">✕</button>
+      <a href="#home" onclick="toggleMobileMenu()">Home</a>
+      <a href="#about" onclick="toggleMobileMenu()">About</a>
+      <a href="#features" onclick="toggleMobileMenu()">Features</a>
+      <a href="#contact" onclick="toggleMobileMenu()">Contact</a>
+      <a href="#route" onclick="toggleMobileMenu()">📍 Route Suggestion</a>
+      <button class="button button-primary" onclick="showLogin('user')">
+        User Login
+      </button>
+      <button class="button button-primary" onclick="showLogin('admin')">
+        Admin Login
+      </button>
     </div>
 
-    <script>
-        document.getElementById('create-mask').addEventListener('click', function() {
-            const areaName = document.getElementById('area_name').value;
-            const createMaskUrl = "{% url 'create_mask' %}?area_name=" + encodeURIComponent(areaName);
-            window.location.href = createMaskUrl;
-        });
+    <main id="main-content">
+      <section id="home" class="hero-section">
+        <div class="container hero-content">
+          <h1 class="hero-title">
+            Revolutionize Urban Mobility with SmartFlow AI
+          </h1>
+          <p class="hero-description">
+            Experience the future of traffic management with our AI-driven
+            solution. Optimize traffic flow, reduce congestion, and create
+            smarter, more efficient cities.
+          </p>
+          <div class="hero-buttons">
+            <a href="{% url 'process_all_roads' %}" class="button button-primary">Get Started</a>
 
-        // Simulated traffic statistics update
-        function updateTrafficStats() {
-            const stats = {
-                vehicleCount: Math.floor(Math.random() * 1000),
-                averageSpeed: Math.floor(Math.random() * 60 + 20),
-                congestionLevel: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)]
-            };
+          </div>
+        </div>
+      </section>
 
-            const statsHtml = `
-                <p><strong>Total Vehicles:</strong> ${stats.vehicleCount}</p>
-                <p><strong>Average Speed:</strong> ${stats.averageSpeed} km/h</p>
-                <p><strong>Congestion Level:</strong> ${stats.congestionLevel}</p>
-            `;
+      <section id="features" class="features-section">
+        <div class="container">
+          <h2 class="section-title">How SmartFlow AI Works</h2>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">🚦</div>
+              <h3 class="feature-title">Intersection Intelligence</h3>
+              <p class="feature-description">
+                Advanced AI and LiDAR technology create a comprehensive 3D view
+                of traffic flow at key intersections.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🚗</div>
+              <h3 class="feature-title">Real-time Vehicle Detection</h3>
+              <p class="feature-description">
+                Accurate 3D vehicle detection and counting using
+                state-of-the-art LiDAR sensors.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">⚡</div>
+              <h3 class="feature-title">Adaptive Traffic Light Control</h3>
+              <p class="feature-description">
+                Dynamic traffic light management based on real-time vehicle
+                counts and traffic patterns.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🗺️</div>
+              <h3 class="feature-title">Smart Routing Suggestions</h3>
+              <p class="feature-description">
+                AI-powered alternative route suggestions to evenly distribute
+                traffic and reduce congestion.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-            document.getElementById('traffic-stats').innerHTML = statsHtml;
-        }
+      <!-- map -->
+      <section class="map-container">
+        <h1>Places where our system are installed</h1>
+        <div id="map"></div>
+      </section>
 
-        // Update stats every 5 seconds
-        updateTrafficStats();
-        setInterval(updateTrafficStats, 5000);
-    </script>
-</body>
+      <!-- //footer -->
+
+      <section class="py-20 bg-footer text-white">
+        <div class="container mx-auto px-4 text-center">
+          <h2 class="text-3xl font-bold mb-4">
+            Ready to Transform Your City's Traffic?
+          </h2>
+          <p class="text-xl text-slate-300 mb-8">
+            Join the smart cities revolution with SmartFlow AI
+          </p>
+          <div class="hover:scale-105 active:scale-95">
+            <button class="bg-green-500 hover:bg-green-600 text-lg px-8 py-3">
+              Request a Demo
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="login-section" class="login-section" style="display: none">
+      <div class="login-card">
+        <h2 class="login-title">Login to SmartFlow AI</h2>
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" required />
+          </div>
+          <button type="submit" class="login-button">Login</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="dashboard-section" class="dashboard-section" style="display: none">
+      <div class="container">
+        <h2 class="section-title">SmartFlow AI Dashboard</h2>
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <h3 class="dashboard-card-title">Total Vehicles</h3>
+            <div class="dashboard-card-content">1,234</div>
+          </div>
+          <div class="dashboard-card">
+            <h3 class="dashboard-card-title">Average Speed</h3>
+            <div class="dashboard-card-content">45 km/h</div>
+          </div>
+          <div class="dashboard-card">
+            <h3 class="dashboard-card-title">Traffic Density</h3>
+            <div class="dashboard-card-content">Medium</div>
+          </div>
+          <div class="dashboard-card">
+            <h3 class="dashboard-card-title">Active Intersections</h3>
+            <div class="dashboard-card-content">42</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

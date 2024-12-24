@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<div class="login-body">
+  <div class="container"></div>
+  <div class="box">
+    <form method="POST" class="form">
+      {% csrf_token %}
+      <div class="input-group input-email">
+        <input type="email" placeholder="" name="username" required />
+        <label class="inEmail">Email</label>
+      </div>
+      <div class="input-group input-password">
+        <input type="password" placeholder="" name="password" required />
+        <label class="inPassword">Password</label>
+      </div>
+      <div class="input-group">
+        <input type="submit" value="Login" />
+      </div>
+      <div class="downline-sign-up">
+        <p style="color: white; display: inline;">If you don't have an account -</p>
+        <a href="{% url 'signUp' %}" style="color: white; text-decoration: underline;">Sign-Up</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
